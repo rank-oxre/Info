@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rank Oxford Response</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-gold: #fbbf24;
+            --accent-blue: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Rank Oxford Response Branding Header */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(180deg, #1e1b4b 0%, var(--bg-dark) 100%);
+            border-bottom: 2px solid #312e81;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #ffffff, var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Continuous Scrolling Marquee Row */
+        .marquee-container {
+            background-color: #1e1b4b;
+            border-top: 1px solid var(--accent-blue);
+            border-bottom: 1px solid var(--accent-blue);
+            padding: 12px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 30s linear infinite;
+        }
+
+        .marquee-item {
+            display: inline-block;
+            margin-right: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .marquee-item span {
+            color: var(--accent-gold);
+        }
+
+        @keyframes marquee {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Top Ranked Highlight Showcase Box */
+        .champion-card {
+            background: radial-gradient(circle at top left, #2e2a14, var(--card-bg));
+            border: 2px solid var(--accent-gold);
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 50px;
+            box-shadow: 0 10px 25px rgba(251, 191, 36, 0.1);
+        }
+
+        .champion-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--accent-gold);
+            box-shadow: 0 0 15px var(--accent-gold);
+            object-fit: cover;
+        }
+
+        .champion-info h2 {
+            margin: 0 0 5px 0;
+            font-size: 2.2rem;
+        }
+
+        .champion-badge {
+            background-color: var(--accent-gold);
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        /* Profiles Grid Layout */
+        .grid-title {
+            font-size: 1.8rem;
+            border-left: 5px solid var(--accent-blue);
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .profile-card {
+            background-color: var(--card-bg);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-blue);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #475569;
+            margin-bottom: 15px;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0 0 5px 0;
+        }
+
+        .profile-rank {
+            color: var(--accent-blue);
+            font-size: 0.95rem;
+            font-weight: 500;
+            background-color: #0f172a;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Rank Oxford Response</h1>
+    </header>
+
+    <div class="marquee-container">
+        <div class="marquee-content" id="marquee-stream"></div>
+    </div>
+
+    <div class="container">
+        <div class="champion-card" id="highest-ranked-container">
+            <p>Gathering automated server stream data...</p>
+        </div>
+
+        <h2 class="grid-title">Server Profiles & Standings</h2>
+        <div class="profile-grid" id="profiles-container"></div>
+    </div>
+
+    <script>
+        // Fetches the file automatically updated by the WispByte bot loop
+        fetch(`./server_data.json?t=${new Date().getTime()}`)
+            .then(response => response.json())
+            .then(data => {
+                renderDashboard(data);
+            })
+            .catch(error => {
+                console.error("Payload tracking error:", error);
+                document.getElementById('highest-ranked-container').innerHTML = "<p style='color:red;'>Waiting for bot's first automated synchronization push.</p>";
+            });
+
+        function renderDashboard(data) {
+            const members = data.members;
+            if (!members || members.length === 0) return;
+
+            // 1. Render Highest Ranked Individual Spotlight Card
+            const topUser = members[0];
+            const champContainer = document.getElementById('highest-ranked-container');
+            champContainer.innerHTML = `
+                <img class="champion-avatar" src="${topUser.avatar_url}" alt="Avatar">
+                <div class="champion-info">
+                    <span style="color: var(--accent-gold); font-weight: bold; letter-spacing: 1px;">HIGHEST RANKED MEMBER</span>
+                    <h2>${topUser.display_name} (@${topUser.username})</h2>
+                    <div class="champion-badge">${topUser.highest_rank}</div>
+                </div>
+            `;
+
+            // 2. Render Infinite Horizontal Scrolling Marquee (Everyone included)
+            const marquee = document.getElementById('marquee-stream');
+            let marqueeHTML = '';
+            members.forEach(m => {
+                marqueeHTML += `<div class="marquee-item">⚡ ${m.display_name}: <span>${m.highest_rank}</span></div>`;
+            });
+            marquee.innerHTML = marqueeHTML + marqueeHTML; 
+
+            // 3. Render Grid Profiles View
+            const gridContainer = document.getElementById('profiles-container');
+            let gridHTML = '';
+            members.forEach(m => {
+                gridHTML += `
+                    <div class="profile-card">
+                        <img class="profile-avatar" src="${m.avatar_url}" alt="Profile">
+                        <div class="profile-name">${m.display_name}</div>
+                        <div style="color: var(--text-muted); font-size:0.85rem; margin-bottom:12px;">@${m.username}</div>
+                        <div class="profile-rank">${m.highest_rank}</div>
+                    </div>
+                `;
+            });
+            gridContainer.innerHTML = gridHTML;
+        }
+    </script>
+</body>
+</html>
+
